@@ -53,22 +53,6 @@ class CustomRecyclerView : RecyclerView, RecyclerView.OnItemTouchListener {
     }
 
 
-//    private fun isTileSelected(tile: SelectedLetter, direction: Int?): Boolean {
-//        for (word in selectedWords) {
-//            //A selected tile cannot be selected again for the same selection type
-//            if (direction == DIRECTION_UNKNOWN || word.direction == direction) {
-//                for (wordTile in word.selectedLetters) {
-//                    //Check also the previous tile in the same direction to prevent connected
-//                    //selected tiles for different words from happening
-//                    if (wordTile.equals(tile) || wordTile.equals(shift(tile, direction, -1))) {
-//                        return true
-//                    }
-//                }
-//            }
-//        }
-//        return false
-//    }
-
     private fun getTilesBetween(startLetter: SelectedLetter?, endLetter: SelectedLetter): List<SelectedLetter> {
         val tiles = ArrayList<SelectedLetter>()
         val direction = startLetter?.getDirection(endLetter)
