@@ -2,11 +2,11 @@ package kedar.com.findwords.models
 
 import kedar.com.findwords.ui.CustomRecyclerView
 
-class SelectedLetter(val row: Int, val col: Int, val gridSize: Int){
+class LetterTile(val row: Int, val col: Int, val gridSize: Int){
 
     var id = row * gridSize + col
 
-    fun getDirection(other: SelectedLetter): Int{
+    fun getDirection(other: LetterTile): Int{
         return if (row == other.row && col < other.col) {
             CustomRecyclerView.DIRECTION_LEFT_TO_RIGHT
         }
@@ -25,11 +25,11 @@ class SelectedLetter(val row: Int, val col: Int, val gridSize: Int){
         ){
             CustomRecyclerView.DIRECTION_TOP_BOTTOM_LEFT_RIGHT
         }
-//        else if(row > other.row
-//            && col < other.col
-//            && row + col == other.row + other.col){
-//            CustomRecyclerView.DIRECTION_BOTTOM_TOP_LEFT_RIGHT
-//        }
+        else if(row > other.row
+            && col > other.col
+            && row - other.row == col - other.col){
+            CustomRecyclerView.DIRECTION_BOTTOM_TOP_RIGHT_LEFT
+        }
 
         else {
             CustomRecyclerView.DIRECTION_UNKNOWN
@@ -37,7 +37,7 @@ class SelectedLetter(val row: Int, val col: Int, val gridSize: Int){
     }
 
     override fun equals(other: Any?): Boolean{
-        return id == (other as SelectedLetter).id
+        return id == (other as LetterTile).id
     }
 
     override fun hashCode(): Int {

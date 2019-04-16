@@ -2,33 +2,33 @@ package kedar.com.findwords.models
 
 import kedar.com.findwords.ui.CustomRecyclerView
 
-class SelectedWord(initialLetter: SelectedLetter){
-    var selectedLetters = HashSet<SelectedLetter>()
-    var last : SelectedLetter? = initialLetter
+class SelectedWord(initialLetterTile: LetterTile){
+    var selectedLetters = HashSet<LetterTile>()
+    var last : LetterTile? = initialLetterTile
     var direction: Int? = CustomRecyclerView.DIRECTION_UNKNOWN
 
     init {
-        addLetter(initialLetter)
+        addLetter(initialLetterTile)
     }
 
-    fun isSelectionAllowed(selection: SelectedLetter): Boolean {
+    fun isSelectionAllowed(selection: LetterTile): Boolean {
         val currentDirection = last?.getDirection(selection)
         return currentDirection != CustomRecyclerView.DIRECTION_UNKNOWN && (direction == CustomRecyclerView.DIRECTION_UNKNOWN || direction == currentDirection)
     }
 
-    fun addLetter(letter: SelectedLetter){
-        selectedLetters.add(letter)
+    fun addLetter(letterTile: LetterTile){
+        selectedLetters.add(letterTile)
     }
 
-    fun isValid(letter: SelectedLetter): Boolean{
-        return selectedLetters.first().getDirection(letter) != CustomRecyclerView.DIRECTION_UNKNOWN
+    fun isValid(letterTile: LetterTile): Boolean{
+        return selectedLetters.first().getDirection(letterTile) != CustomRecyclerView.DIRECTION_UNKNOWN
     }
 
-    fun addLetters(letters: List<SelectedLetter>){
+    fun addLetters(letterTiles: List<LetterTile>){
         if (direction == CustomRecyclerView.DIRECTION_UNKNOWN) {
-            direction = last?.getDirection(letters.first())
+            direction = last?.getDirection(letterTiles.first())
         }
-        selectedLetters.addAll(letters)
+        selectedLetters.addAll(letterTiles)
         last = selectedLetters.last()
     }
 }

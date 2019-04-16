@@ -13,6 +13,6 @@ class GridItemViewHolder(val context:Context, itemView: View) : RecyclerView.Vie
         row= rowNum
         col = colNum
         itemView.id = rowNum*8+colNum
-        itemView.letter.text = letter
+        itemView.letterTile.text = letter
     }
 }

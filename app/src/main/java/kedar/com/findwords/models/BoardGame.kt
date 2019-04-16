@@ -14,7 +14,7 @@ class BoardGame(json: JSONObject){
     var solvedPuzzles = 0
     var gridRows = ArrayList<GridRow>()
 
-    var wordLocations = ArrayList<WordLocation>()
+    var wordLocations = HashMap<WordLocation, Boolean>()
 
     init {
         getGrid()
@@ -23,7 +23,7 @@ class BoardGame(json: JSONObject){
 
     private fun getWordLocations(){
         for(key in wordLoc.keys()){
-            wordLocations.add(WordLocation(getListOfColRow(key),wordLoc.get(key) as String))
+            wordLocations.put(WordLocation(getListOfColRow(key),wordLoc.get(key) as String),false)
         }
         totalPuzzles = wordLocations.size
     }

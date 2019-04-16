@@ -3,7 +3,6 @@ package kedar.com.findwords.ui
 import androidx.appcompat.app.AppCompatActivity
 
 import android.os.Bundle
-import android.os.Handler
 import android.widget.TextView
 import androidx.recyclerview.widget.GridLayoutManager
 import kedar.com.findwords.R
@@ -22,7 +21,7 @@ import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.concurrent.schedule
 
-const val split_by ="\"target_language\": \"es\"}"
+
 class FindWordsActivity : AppCompatActivity(), IWordValidator {
 
     lateinit var headerWord :  TextView
@@ -47,7 +46,7 @@ class FindWordsActivity : AppCompatActivity(), IWordValidator {
 
     init {
 
-        val url = "https://s3.amazonaws.com/duolingo-data/s3/js2/find_challenges.txt"
+        val url = baseUrl
             val request = Request.Builder().url(url).build()
 
             val client = OkHttpClient()
@@ -103,6 +102,7 @@ class FindWordsActivity : AppCompatActivity(), IWordValidator {
         recyclerView.layoutManager = GridLayoutManager(this, grid.size)
         recyclerView.wordValidator = this
         recyclerView.gridRowSize = grid.size
+        recyclerView.boardLocked = false
         val puzzleAdapter = PuzzleGridRecycleAdapter(this)
         recyclerView.adapter = puzzleAdapter
         puzzleAdapter.setGridLetters(grid, grid.size)
@@ -113,11 +113,12 @@ class FindWordsActivity : AppCompatActivity(), IWordValidator {
         for(selectedLetter in selectedWord.selectedLetters.iterator()){
             listToCompare.add(ColumnRowPair(selectedLetter.col,selectedLetter.row))
         }
-        for(wordLocation in currentGame.wordLocations){
-            if(listToCompare.size == wordLocation.colRowPairs.size
+        for(wordLocation in currentGame.wordLocations.keys){
+            if(!currentGame.wordLocations[wordLocation]!! && listToCompare.size == wordLocation.colRowPairs.size
                 && listToCompare.containsAll(wordLocation.colRowPairs)){
                 currentGame.solvedPuzzles++
                 setAttempts(currentGame.totalPuzzles - currentGame.solvedPuzzles)
+                currentGame.wordLocations[wordLocation] = true
                 return true
             }
 
@@ -133,6 +134,11 @@ class FindWordsActivity : AppCompatActivity(), IWordValidator {
         runOnUiThread {
             checkForTheNextGame()
         }
+    }
+
+    companion object{
+        const val split_by ="\"target_language\": \"es\"}"
+        const val baseUrl = "https://s3.amazonaws.com/duolingo-data/s3/js2/find_challenges.txt"
     }
 
 }
