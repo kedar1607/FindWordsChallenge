@@ -13,7 +13,7 @@ class SelectedWord(initialLetterTile: LetterTile){
     /**
      * unique selected letter tiles
      */
-    var selectedLetters = HashSet<LetterTile>()
+    var selectedLetters = LinkedHashSet<LetterTile>()
     /**
      * last letter tile in [selectedLetters]
      */
@@ -58,7 +58,7 @@ class SelectedWord(initialLetterTile: LetterTile){
      * [letterTiles] input
      * this also assigns [last] tile as letters are added
      */
-    fun addLetters(letterTiles: List<LetterTile>){
+    fun addLetters(letterTiles: LinkedHashSet<LetterTile>){
         if (direction == CustomRecyclerView.DIRECTION_UNKNOWN) {
             direction = last?.getDirection(letterTiles.first())
         }

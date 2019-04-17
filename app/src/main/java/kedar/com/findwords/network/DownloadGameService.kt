@@ -32,12 +32,12 @@ class DownloadGameService(private val context: Context, private val downloadServ
      */
     override fun onResponse(call: Call?, response: Response?) {
         val body = response?.body()?.string()
-        val array = body?.split(split_by)
+        val array = body?.split("\n")
         if(array!=null) {
             for (element in array) {
                 if(!element.isBlank()&& element.isNotEmpty())
                     // transform all the JSON objects in BoardGame
-                    gameBoards.add(BoardGame(JSONObject(element+ split_by)))
+                    gameBoards.add(BoardGame(JSONObject(element)))
             }
             downloadServiceCallback.onSuccess(gameBoards)
         }else{
@@ -54,7 +54,6 @@ class DownloadGameService(private val context: Context, private val downloadServ
     }
 
     companion object{
-        const val split_by ="\"target_language\": \"es\"}"
         const val baseUrl = "https://s3.amazonaws.com/duolingo-data/s3/js2/find_challenges.txt"
     }
 }

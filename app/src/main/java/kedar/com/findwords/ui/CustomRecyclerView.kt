@@ -14,8 +14,8 @@ import kedar.com.findwords.interfaces.GamePlayValidator
 import kedar.com.findwords.models.LetterTile
 import kedar.com.findwords.models.SelectedWord
 import java.util.*
-import kotlin.collections.ArrayList
 import kotlin.collections.HashSet
+import kotlin.collections.LinkedHashSet
 import kotlin.concurrent.schedule
 
 /**
@@ -66,8 +66,8 @@ class CustomRecyclerView : RecyclerView, RecyclerView.OnItemTouchListener {
      * [endLetterTile] is the final tile that was selected
      * @return the list of selected letters for the current selection
      */
-    private fun getTilesBetween(startLetterTile: LetterTile?, endLetterTile: LetterTile): List<LetterTile> {
-        val tiles = ArrayList<LetterTile>()
+    private fun getTilesBetween(startLetterTile: LetterTile?, endLetterTile: LetterTile): LinkedHashSet<LetterTile> {
+        val tiles = LinkedHashSet<LetterTile>()
         val direction = startLetterTile?.getDirection(endLetterTile)
         var currPoint = startLetterTile
         if (direction != DIRECTION_UNKNOWN) {
@@ -158,7 +158,7 @@ class CustomRecyclerView : RecyclerView, RecyclerView.OnItemTouchListener {
         val child = getChildAt(row * gridRowSize + col)
 
         //Exit on invalid touches
-        if (e?.actionMasked != MotionEvent.ACTION_UP && (row >= gridRowSize   || col >= gridRowSize || child == null) || boardLocked) {
+        if ((e?.actionMasked != MotionEvent.ACTION_UP && (row >= gridRowSize   || col >= gridRowSize || child == null)) || boardLocked) {
             updateSelection(selectedWord?.selectedLetters, false, false)
             return true
         }
