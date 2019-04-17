@@ -12,4 +12,5 @@
     <string name="matches_found">All matches found</string>
     <string name="start_over">Start Over</string>
     <string name="retry">RETRY</string>
+    <string name="correct_ans">correct answer: %s</string>
 </resources>

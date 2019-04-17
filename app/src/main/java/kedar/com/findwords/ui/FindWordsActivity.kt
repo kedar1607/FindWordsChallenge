@@ -23,6 +23,9 @@ import java.util.*
 
 import kotlin.collections.ArrayList
 import kotlin.concurrent.schedule
+import com.google.android.material.snackbar.Snackbar
+import androidx.coordinatorlayout.widget.CoordinatorLayout
+
 
 /**
  * This activity is responsible for calling the DownloadGameService, handling it's callbacks and depending
@@ -33,6 +36,11 @@ import kotlin.concurrent.schedule
  * game play screen.
  */
 class FindWordsActivity : AppCompatActivity(), GamePlayValidator, DownloadServiceCallback {
+
+    /**
+     * Root layout of the activity
+     */
+    private lateinit var rootLayout: CoordinatorLayout
 
     /**
      *TextView for the word to be translated
@@ -112,6 +120,7 @@ class FindWordsActivity : AppCompatActivity(), GamePlayValidator, DownloadServic
      * Initialize all the UI components
      */
     private fun initViews(){
+        rootLayout = findViewById(R.id.main_content)
         headerWord = findViewById(R.id.section_label)
         attemptsText = findViewById(R.id.attempts_left)
         recyclerView = findViewById(R.id.gridRecyclerView)
@@ -259,11 +268,22 @@ class FindWordsActivity : AppCompatActivity(), GamePlayValidator, DownloadServic
                 currentGame.solvedPuzzles++
                 setAttempts(currentGame.totalPuzzles - currentGame.solvedPuzzles)
                 currentGame.wordLocations[wordLocation] = true
+                showSnackBar(wordLocation.word)
                 return true
             }
 
         }
         return false
+    }
+
+    /**
+     * This method shows the a snackbar for shorter duration once right answer is selected by a user
+     * [answer] right answer selected by user
+     */
+    private fun showSnackBar(answer: String){
+        val snackbar = Snackbar
+            .make(rootLayout, String.format(getString(R.string.correct_ans),answer), Snackbar.LENGTH_SHORT)
+        snackbar.show()
     }
 
     /**
