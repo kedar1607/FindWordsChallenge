@@ -3,104 +3,219 @@ package kedar.com.findwords.ui
 import androidx.appcompat.app.AppCompatActivity
 
 import android.os.Bundle
+import android.view.View.GONE
+import android.view.View.VISIBLE
+import android.widget.Button
+import android.widget.LinearLayout
+import android.widget.ProgressBar
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.GridLayoutManager
 import kedar.com.findwords.R
-import kedar.com.findwords.interfaces.IWordValidator
+import kedar.com.findwords.interfaces.DownloadServiceCallback
+import kedar.com.findwords.interfaces.GamePlayValidator
 import kedar.com.findwords.models.BoardGame
 import kedar.com.findwords.models.ColumnRowPair
 import kedar.com.findwords.models.SelectedWord
-import kedar.com.findwords.puzzleuielements.GridRow
-import kedar.com.findwords.puzzleuielements.PuzzleGridRecycleAdapter
-import okhttp3.*
-import org.json.JSONArray
-import org.json.JSONObject
-
-import java.io.IOException
+import kedar.com.findwords.network.DownloadGameService
+import kedar.com.findwords.models.GridRow
 import java.util.*
+
 import kotlin.collections.ArrayList
 import kotlin.concurrent.schedule
 
+/**
+ * This activity is responsible for calling the DownloadGameService, handling it's callbacks and depending
+ * on the result of the callback set all the UI components for the game. It also implements GamePlayValidator
+ * which is responsible for notifying the game-play about valid selections, game completions.
+ *
+ * Other than what mentioned above, it is also doing work of managing all different UI components for the
+ * game play screen.
+ */
+class FindWordsActivity : AppCompatActivity(), GamePlayValidator, DownloadServiceCallback {
 
-class FindWordsActivity : AppCompatActivity(), IWordValidator {
+    /**
+     *TextView for the word to be translated
+     */
+    private lateinit var headerWord :  TextView
 
-    lateinit var headerWord :  TextView
+    /**
+     * TextView for the numberof words to be found per challenge
+     */
+    private lateinit var attemptsText :TextView
 
-    lateinit var attemptsText :TextView
+    /**
+     *  RCV used for loading a grid of letters and receive touch events
+     */
+    private lateinit var recyclerView: CustomRecyclerView
 
-    lateinit var recyclerView: CustomRecyclerView
+    /**
+     *Layout with animation components
+     */
+    private lateinit var loadingProgress: LinearLayout
 
-    var totalGames = 0
+    /**
+     * TextView for Loading view text message
+     */
+    private lateinit var tvLoadingText : TextView
 
-    var currentIndex = 0
+    /**
+     * Gameplay layout
+     */
+    private lateinit var challengeLayout: LinearLayout
 
-    val jsonArray = JSONArray()
+    /**
+     * button to start over all the challenges
+     */
+    private lateinit var startOver: Button
 
+    /**
+     * Loading animator
+     */
+    private lateinit var progressIndicator: ProgressBar
+
+    /**
+     * to track total challenges in the game
+     */
+    private var totalGames = 0
+
+    /**
+     * to track currently loaded challenge
+     */
+    private var currentIndex = 0
+
+    /**
+     * List of all the challenges
+     */
+    private val boardGames = ArrayList<BoardGame>()
+
+    /**
+     * current challenge
+     */
     lateinit var currentGame: BoardGame
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_find_words)
+        initViews()
     }
 
+    /**
+     * UI components not required to be initialized to download data
+     */
     init {
-
-        val url = baseUrl
-            val request = Request.Builder().url(url).build()
-
-            val client = OkHttpClient()
-
-            client.newCall(request).enqueue(object: Callback {
-                override fun onResponse(call: Call?, response: Response?) {
-                    val body = response?.body()?.string()
-                    val array = body?.split(split_by)
-                    if(array!=null) {
-                        for (element in array) {
-                            if(!element.isBlank()&& !element.isEmpty())
-                                jsonArray.put(JSONObject(element+ split_by))
-                        }
-                    }
-                    runOnUiThread { initView() }
-                }
-
-                override fun onFailure(call: Call?, e: IOException?) {
-                    e?.printStackTrace()
-                }
-            })
+        startDownloadService()
     }
 
-    private fun initView(){
-        totalGames = jsonArray.length()
+    /**
+     * Initialize all the UI components
+     */
+    private fun initViews(){
         headerWord = findViewById(R.id.section_label)
         attemptsText = findViewById(R.id.attempts_left)
         recyclerView = findViewById(R.id.gridRecyclerView)
-        checkForTheNextGame()
-    }
-
-    private fun checkForTheNextGame(){
-        if(currentIndex < totalGames){
-            currentGame = BoardGame(jsonArray[currentIndex++] as JSONObject)
-            setTheBoard(currentGame)
+        loadingProgress = findViewById(R.id.downloading)
+        tvLoadingText = findViewById(R.id.tv_loading_progress)
+        challengeLayout = findViewById(R.id.challenge_layout)
+        startOver = findViewById(R.id.start_over)
+        progressIndicator = findViewById(R.id.loading_indicator)
+        startOver.setOnClickListener{
+            startOver()
         }
     }
 
+    /**
+     * This method is used to start over all the challenges
+     */
+    private fun startOver(){
+        tvLoadingText.text = getString(R.string.downloading)
+        startOver.visibility = GONE
+        progressIndicator.visibility = VISIBLE
+        currentIndex = 0
+        totalGames = 0
+        boardGames.clear()
+        startDownloadService()
+    }
+
+    /**
+     * Start the service to download data for all the challenges
+     */
+    private fun startDownloadService(){
+        DownloadGameService(this, this)
+    }
+
+    /**
+     * Once data is downloaded start the challenge using this method
+     */
+    private fun startChallenge(){
+        stopLoadingAnimation()
+        totalGames = boardGames.size
+        checkForTheNextGame()
+    }
+
+    /**
+     * Check if the next challenge is available, otherwise show startover button
+     */
+    private fun checkForTheNextGame(){
+        if(currentIndex < totalGames){
+            animateLoadingNext()
+            Timer(false).schedule(DELAY_FOR_NEXT_CHALLENGE) {
+                runOnUiThread {
+                    stopLoadingAnimation()
+                    currentGame = boardGames[currentIndex++]
+                    setTheBoard(currentGame)
+                }
+            }
+        }else{
+            startOver.text = getString(R.string.start_over)
+            startOver.visibility = VISIBLE
+        }
+    }
+
+    /**
+     * Intentional animation before start of next challenge
+     */
+    private fun animateLoadingNext(){
+        challengeLayout.visibility = GONE
+        loadingProgress.visibility = VISIBLE
+        tvLoadingText.text = getString(R.string.loading_next)
+    }
+
+    /**
+     * stop animation after a certain delay and show the challenge UI components
+     */
+    private fun stopLoadingAnimation(){
+        challengeLayout.visibility = VISIBLE
+        loadingProgress.visibility = GONE
+    }
+
+    /**
+     * set the board UI for current challenge
+     * [game] current challenge being played
+     */
     private fun setTheBoard(game: BoardGame){
         setHeader(game.word)
         setupGridRecyclerView(game.gridRows)
         setAttempts(game.totalPuzzles)
     }
 
+
+    /**
+     * Set the word for translation
+     * [title] word for translation
+     */
     private fun setHeader(title: String){
         headerWord.text = title
     }
 
-    private fun setAttempts(attempts:Int){
-        attemptsText.text = String.format(this.getString(R.string.attempts),attempts)
-    }
+    /**
+     * set the challenge board (grid) with recycler view and it's adapter
+     * [grid] List of all the rows in the grid
+     */
     private fun setupGridRecyclerView(grid: List<GridRow>){
         recyclerView.layoutManager = GridLayoutManager(this, grid.size)
-        recyclerView.wordValidator = this
+        recyclerView.gamePlayValidator = this
         recyclerView.gridRowSize = grid.size
         recyclerView.boardLocked = false
         val puzzleAdapter = PuzzleGridRecycleAdapter(this)
@@ -108,6 +223,29 @@ class FindWordsActivity : AppCompatActivity(), IWordValidator {
         puzzleAdapter.setGridLetters(grid, grid.size)
     }
 
+    /**
+     * set number of words left to be selected to answer all translations
+     * [attempts] number of words left to be selected
+     */
+    private fun setAttempts(attempts:Int){
+        if(attempts > 0) {
+            attemptsText.text = String.format(resources.getQuantityString(R.plurals.attempts, attempts), attempts)
+            attemptsText.setTextColor(ContextCompat.getColor(this,R.color.colorAccent))
+        }else{
+            attemptsText.text = resources.getString(R.string.matches_found)
+            attemptsText.setTextColor(ContextCompat.getColor(this,R.color.colorPrimary))
+        }
+    }
+
+    /**
+     * validate the selected word formed from multiple grid items in certain direction.
+     * This method checks if all the different row-col indexes are included in the current selection which
+     * are also part of word location in an array of wordlocations in currently set game board
+     * [selectedWord] selected word that contains list of LetterTile and which will be validated agains word-
+     * locations of currently playing game board.
+     *
+     * @return true If the word is validated (and not previously validated), false otherwise
+     */
     override fun validateWord(selectedWord: SelectedWord):Boolean {
         val listToCompare = ArrayList<ColumnRowPair>()
         for(selectedLetter in selectedWord.selectedLetters.iterator()){
@@ -126,19 +264,55 @@ class FindWordsActivity : AppCompatActivity(), IWordValidator {
         return false
     }
 
+    /**
+     * notifies the grid recycler view about the game completion so it can stop all touches to the grid
+     * @return true if all word locations are validated correctly, false otherwise
+     */
     override fun isGameComplete(): Boolean {
        return currentGame.totalPuzzles == currentGame.solvedPuzzles
     }
 
+    /**
+     * Call back from the grid recycler view to notify that the current challenge is fully answered
+     * and waited for the delay that was set before next challenge is shown to the user.
+     * After the delay, check for the next available challenge
+     */
     override fun notifyRightAnswersSelected() {
         runOnUiThread {
             checkForTheNextGame()
         }
     }
 
+    /**
+     * call back from the DownloadGameService that the download of challenges data is successful with the
+     * list of all Board games
+     * [boardGames] list of all the board games
+     */
+    override fun onSuccess(boardGames: List<BoardGame>) {
+        this.boardGames.addAll(boardGames)
+        runOnUiThread { startChallenge() }
+    }
+
+    /**
+     * callback from the DownloadGameService that the download of the data has failed for some reason.
+     * This method also sets the error message for an end user to let them know that there was something wrong
+     * and an option for them to retry the game in case failure was due to no network connection
+     * [message] message to the end user
+     */
+    override fun onFailure(message: String) {
+        runOnUiThread {
+            progressIndicator.visibility = GONE
+            startOver.visibility = VISIBLE
+            startOver.text = getString(R.string.retry)
+            tvLoadingText.text = getString(R.string.download_failed)
+        }
+    }
+
     companion object{
-        const val split_by ="\"target_language\": \"es\"}"
-        const val baseUrl = "https://s3.amazonaws.com/duolingo-data/s3/js2/find_challenges.txt"
+        /**
+         * Delay for showing the animation before next challenge
+         */
+        const val DELAY_FOR_NEXT_CHALLENGE = 750L
     }
 
 }

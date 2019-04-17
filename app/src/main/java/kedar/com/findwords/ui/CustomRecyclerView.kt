@@ -9,7 +9,7 @@ import android.view.ViewConfiguration
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import kedar.com.findwords.R
-import kedar.com.findwords.interfaces.IWordValidator
+import kedar.com.findwords.interfaces.GamePlayValidator
 import kedar.com.findwords.models.LetterTile
 import kedar.com.findwords.models.SelectedWord
 import java.util.*
@@ -17,7 +17,13 @@ import kotlin.collections.ArrayList
 import kotlin.collections.HashSet
 import kotlin.concurrent.schedule
 
-
+/**
+ * This class is extended from [RecyclerView] in android.
+ * The main purpose of this class is to capture the touch events on the grid recycler view
+ * by overriding the [onTouchEvent] method. It is also responsible for transforming touch events to
+ * selectable words in a particular direction, send them for validation and keep the selections of
+ * correctly selected answers.
+ */
 class CustomRecyclerView : RecyclerView, RecyclerView.OnItemTouchListener {
     private var mTouchSlope: Int = 0
 
@@ -34,7 +40,7 @@ class CustomRecyclerView : RecyclerView, RecyclerView.OnItemTouchListener {
     var boardLocked = false
 
     //word validator is used to validate the selected word from the source of the game board data (in this case it's Find Words Activity)
-    lateinit var wordValidator: IWordValidator
+    lateinit var gamePlayValidator: GamePlayValidator
 
     constructor(context: Context) : super(context) {
         init(context)
@@ -190,7 +196,7 @@ class CustomRecyclerView : RecyclerView, RecyclerView.OnItemTouchListener {
             MotionEvent.ACTION_UP -> {
                 if(selectedWord!=null){
                     //Check if the selected word is valid and add it (all it's tiles/selected letters) to the selected tiles / letters
-                    val isValid = wordValidator.validateWord(selectedWord!!)
+                    val isValid = gamePlayValidator.validateWord(selectedWord!!)
                     if(isValid){
                         addToSelectedTiles(selectedWord!!)
                     }
@@ -198,12 +204,12 @@ class CustomRecyclerView : RecyclerView, RecyclerView.OnItemTouchListener {
                     updateSelection(selectedWord?.selectedLetters, false,isValid )
                     // If the game is complete, we lock the board for any further touches until new game is loaded
 
-                    if(isValid && wordValidator.isGameComplete()){
+                    if(isValid && gamePlayValidator.isGameComplete()){
                         tilesForCorrectAnswers.clear()
                         boardLocked = true
                         Timer(false).schedule(DELAY_BEFORE_NEXT_GAME) {
                             // notify the source / word validator that all the right answers are matched after a delay of 1 second
-                            wordValidator.notifyRightAnswersSelected()
+                            gamePlayValidator.notifyRightAnswersSelected()
                         }
                     }
                 }
@@ -251,6 +257,7 @@ class CustomRecyclerView : RecyclerView, RecyclerView.OnItemTouchListener {
     }
 
     companion object{
+        //All directions with self explanatory names
         const val DIRECTION_LEFT_TO_RIGHT = 0
         const val DIRECTION_TOP_TO_BOTTOM = 1
         const val DIRECTION_TOP_BOTTOM_LEFT_RIGHT = 2
@@ -259,10 +266,17 @@ class CustomRecyclerView : RecyclerView, RecyclerView.OnItemTouchListener {
         const val DIRECTION_BOTTOM_TOP_RIGHT_LEFT = 5
         const val DIRECTION_UNKNOWN = -1
 
+        //grid item size
         const val dp = 40.0f
 
-        const val DELAY_BEFORE_NEXT_GAME = 1000L
 
+        const val DELAY_BEFORE_NEXT_GAME = 750L
+
+        /**
+         * Gets pixels from dp
+         * [context] current context to load the resources
+         * [dp] value in dp to be converted to pixels
+         */
         private fun pxFromDp(context: Context, dp: Float): Float {
             return dp * context.resources.displayMetrics.density
         }

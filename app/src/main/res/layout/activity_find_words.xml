@@ -28,24 +28,13 @@
                                        app:cardUseCompatPadding="true"
                                        tools:context=".ui.PuzzleFragment">
 
-        <LinearLayout android:layout_width="match_parent"
+        <LinearLayout
+                    android:id="@+id/challenge_layout"
+                    android:layout_width="match_parent"
                       android:orientation="vertical"
                       android:layout_gravity="center"
                       android:gravity="center"
                       android:layout_height="wrap_content">
-
-            <TextView
-                    android:id="@+id/attempts_left"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="top|end"
-                    android:textColor="@color/colorPrimaryDark"
-                    android:textStyle="bold"
-                    android:textSize="@dimen/grid_item_text_size"
-                    android:layout_marginStart="@dimen/activity_horizontal_margin"
-                    android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                    android:layout_marginTop="@dimen/activity_vertical_margin"
-                    android:layout_marginBottom="@dimen/activity_vertical_margin"/>
             <TextView
                     android:id="@+id/section_label"
                     android:layout_width="wrap_content"
@@ -59,6 +48,19 @@
                     android:layout_marginTop="@dimen/activity_vertical_margin"
                     android:layout_marginBottom="@dimen/activity_vertical_margin"/>
 
+            <TextView
+                    android:id="@+id/attempts_left"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:textColor="@color/colorPrimaryDark"
+                    android:textStyle="bold"
+                    android:textSize="@dimen/grid_item_text_size"
+                    android:layout_marginStart="@dimen/activity_horizontal_margin"
+                    android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                    android:layout_marginTop="@dimen/activity_vertical_margin"
+                    android:layout_marginBottom="@dimen/activity_vertical_margin"/>
+
             <kedar.com.findwords.ui.CustomRecyclerView android:layout_width="wrap_content"
                                                        android:layout_gravity="center"
                                                        android:layout_marginStart="@dimen/card_horizontal_margin"
@@ -67,6 +69,40 @@
                                                        android:layout_marginBottom="@dimen/card_vertical_margin"
                                                        android:id="@+id/gridRecyclerView"
                                                        android:layout_height="wrap_content"/>
+
+            <Button
+                    android:id="@+id/start_over"
+                    android:elevation="2dp"
+                    android:background="@color/colorPrimary"
+                    android:layout_width="wrap_content"
+                    android:textColor="@color/white"
+                    android:visibility="gone"
+                    android:padding="4dp"
+                    android:text="@string/start_over"
+                    android:layout_height="wrap_content"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+                android:id="@+id/downloading"
+                android:orientation="vertical"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+            <ProgressBar
+                    android:id="@+id/loading_indicator"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+            <TextView
+                    android:id="@+id/tv_loading_progress"
+                    android:padding="@dimen/card_vertical_margin"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/dark_grey"
+                    android:text="@string/downloading"
+            />
 
         </LinearLayout>
 
