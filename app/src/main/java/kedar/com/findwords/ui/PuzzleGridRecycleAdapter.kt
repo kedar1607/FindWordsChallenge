@@ -5,24 +5,20 @@ import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import kedar.com.findwords.R
+import kedar.com.findwords.utils.SizeUtil
 import kedar.com.findwords.models.GridRow
-import kedar.com.findwords.ui.GridItemViewHolder
+import kotlinx.android.synthetic.main.grid_layout_item.view.*
 
 /**
  * This class is an adapter / data source to the recycler view
  */
-class PuzzleGridRecycleAdapter(val context: Context):
+class PuzzleGridRecycleAdapter(val context: Context, val listSize: Int):
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     /**
      * list of grid rows that forms the grid
      */
     private var gridRows = listOf<GridRow>()
-
-    /**
-     * number of rows
-     */
-    private var listSize = 0
 
     /**
      * creates the view holder from grid_layout_item and returns it for draw
@@ -32,6 +28,11 @@ class PuzzleGridRecycleAdapter(val context: Context):
             context,
             LayoutInflater.from(parent.context).inflate(R.layout.grid_layout_item, parent, false)
         )
+        // Assign the item width and height, text size at run-time depending on the number of rows
+        val itemSize = SizeUtil.getGridItemHeightAndWidth(context,listSize)
+        gridItm.itemView.layoutParams.height = itemSize.toInt()
+        gridItm.itemView.layoutParams.width = itemSize.toInt()
+        gridItm.itemView.letterTile.textSize = SizeUtil.getGridItemTextSize(listSize)
         return gridItm
 
     }
@@ -57,8 +58,7 @@ class PuzzleGridRecycleAdapter(val context: Context):
      * [listOfLetters] list of grid rows
      * [listSize] number of rows
      */
-    fun setGridLetters(listOfLetters: List<GridRow>, listSize: Int) {
-        this.listSize = listSize
+    fun setGridLetters(listOfLetters: List<GridRow>) {
         this.gridRows = listOfLetters
         notifyDataSetChanged()
     }

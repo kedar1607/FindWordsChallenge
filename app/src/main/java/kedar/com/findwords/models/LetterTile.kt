@@ -13,7 +13,7 @@ class LetterTile(val row: Int, val col: Int, val gridSize: Int){
     var id = row * gridSize + col
 
     /**
-     * This function fins the direction from this letter tile to [other].
+     * This function finds the direction from this letter tile to [other].
      * Finding the direction is crucial step in determining the valid selection of words in the grid.
      * This method is called multiple times as finger is moved on the grid for making selection
      * [other] other tile to which direction is found and returned

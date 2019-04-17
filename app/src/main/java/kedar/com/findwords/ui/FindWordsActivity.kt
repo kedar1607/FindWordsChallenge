@@ -216,11 +216,13 @@ class FindWordsActivity : AppCompatActivity(), GamePlayValidator, DownloadServic
     private fun setupGridRecyclerView(grid: List<GridRow>){
         recyclerView.layoutManager = GridLayoutManager(this, grid.size)
         recyclerView.gamePlayValidator = this
+        //Row size is needed to calculate the item height/width at run time
         recyclerView.gridRowSize = grid.size
         recyclerView.boardLocked = false
-        val puzzleAdapter = PuzzleGridRecycleAdapter(this)
+        //grid size is needed to calculate the item height/width and text size at run time
+        val puzzleAdapter = PuzzleGridRecycleAdapter(this, grid.size)
         recyclerView.adapter = puzzleAdapter
-        puzzleAdapter.setGridLetters(grid, grid.size)
+        puzzleAdapter.setGridLetters(grid)
     }
 
     /**

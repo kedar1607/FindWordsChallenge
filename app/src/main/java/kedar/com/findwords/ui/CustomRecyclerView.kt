@@ -9,6 +9,7 @@ import android.view.ViewConfiguration
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import kedar.com.findwords.R
+import kedar.com.findwords.utils.SizeUtil
 import kedar.com.findwords.interfaces.GamePlayValidator
 import kedar.com.findwords.models.LetterTile
 import kedar.com.findwords.models.SelectedWord
@@ -147,10 +148,11 @@ class CustomRecyclerView : RecyclerView, RecyclerView.OnItemTouchListener {
         var col: Int = -1
 
         // Get relative row and column depending on the X and Y
+        val itemSize = SizeUtil.getGridItemHeightAndWidth(context,gridRowSize)
         if(Y!=null)
-             row = (Y / pxFromDp(context, dp)).toInt()
+             row = (Y / itemSize).toInt()
         if(X!=null)
-            col = (X / pxFromDp(context, dp)).toInt()
+            col = (X / itemSize).toInt()
 
         // By using column and row number above, get the child at that position
         val child = getChildAt(row * gridRowSize + col)
@@ -266,20 +268,6 @@ class CustomRecyclerView : RecyclerView, RecyclerView.OnItemTouchListener {
         const val DIRECTION_BOTTOM_TOP_RIGHT_LEFT = 5
         const val DIRECTION_UNKNOWN = -1
 
-        //grid item size
-        const val dp = 40.0f
-
-
         const val DELAY_BEFORE_NEXT_GAME = 750L
-
-        /**
-         * Gets pixels from dp
-         * [context] current context to load the resources
-         * [dp] value in dp to be converted to pixels
-         */
-        private fun pxFromDp(context: Context, dp: Float): Float {
-            return dp * context.resources.displayMetrics.density
-        }
-
     }
 }
